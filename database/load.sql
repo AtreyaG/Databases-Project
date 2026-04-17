@@ -1,0 +1,106 @@
+INSERT INTO family (fam_id, fam_name, member_count) VALUES (1, 'SonnyAngel', 57);
+
+INSERT INTO member (net_id, first_name, last_name, year, major, fam_id) VALUES
+    ('QKP230000', 'Kelly', 'Pham', 'sophomore', 'Marketing', 1),
+    ('DAL473036', 'Jessica', 'Lam', 'freshman', 'Supply Chain Management and Analytics', 1),
+    ('DAL351222', 'Minh', 'Nguyen', 'freshman', 'Public health', 1),
+    ('JHL220003', 'Justin', 'Ly', 'junior', 'Finance', 1),
+    ('DAL183708', 'Kelvin', 'Nguyen', 'freshman', 'Computer Engineering', 1),
+    ('LRS210002', 'Lillanne', 'Stanford', 'junior', 'Finance', 1),
+    ('DAL013357', 'Quoc', 'Lam', 'freshman', 'Mechanical Engineering', 1),
+    ('NA00000001', 'Jessica', 'Nguyen', 'sophomore', 'Finance and Fashion Media', 1),
+    ('DAL573633', 'Andrew', 'Liang', 'freshman', 'Biomedical Engineering', 1),
+    ('HMT210000', 'Hoang', 'Thai', 'junior', 'Electrical Engineering', 1),
+    ('JSP190003', 'Josh', 'Paik', 'graduate', 'Accounting', 1),
+    ('DAL867868', 'Collin', 'Nguyen', 'freshman', 'Biomedical Engineering', 1),
+    ('DAL030871', 'Anthony', 'Le-Griffin', 'freshman', 'Computer Science', 1),
+    ('MHN220002', 'Marius', 'Nguyen', 'junior', 'Computer Engineerinng', 1),
+    ('DNN200001', 'Dan', 'Nguyen', 'graduate', 'Systems Engineer', 1),
+    ('DAL314619', 'Elisa', 'Tran', 'freshman', 'Psychology', 1),
+    ('KDN230001', 'Kasey', 'Nguyen', 'sophomore', 'Finance', 1),
+    ('LNT230002', 'Levin', 'Tran', 'sophomore', 'Electrical Engineering', 1),
+    ('ALD240001', 'Mia', 'Do', 'sophomore', 'Finance', 1),
+    ('DAL100658', 'Vy', 'Dang', 'freshman', 'Biology', 1),
+    ('DAL654790', 'Matthew', 'Miguel', 'freshman', 'Mechanical Engineering', 1),
+    ('DAL422126', 'Kaylie', 'Duong', 'freshman', 'Biology', 1),
+    ('RVY200000', 'Rishik', 'Yechuri', 'senior', 'Computer Science', 1),
+    ('DAL687333', 'Ethan', 'Yu', 'freshman', 'Economics', 1),
+    ('DAL974164', 'Benjamin', 'Trinh', 'freshman', 'Mechanical Engineering', 1),
+    ('DAL566812', 'Kaitlyn', 'Tran', 'freshman', 'Business Analytics', 1),
+    ('KND230002', 'Kha', 'Dang', 'sophomore', 'Healthcare Studies', 1),
+    ('NTT240000', 'Nathan', 'Truong', 'sophomore', 'Mechanical Engineering', 1),
+    ('LTN230001', 'Lena', 'Nguyen', 'junior', 'Healthcare Studies', 1),
+    ('J2233179', 'Julie', 'Nguyen', 'sophomore', 'Business Administration', 1),
+    ('CXC200049', 'Connie', 'Chow', 'graduate', 'Accounting', 1),
+    ('BXV220008', 'Brandon', 'Vo', 'senior', 'Software Engineering', 1),
+    ('KXH220026', 'Vee', 'Huynh', 'senior', 'Media Arts & Designs', 1),
+    ('KHP220001', 'Kaitlyn', 'Pham', 'senior', 'Finance', 1),
+    ('DAL314181', 'Emma', 'Elizondo', 'freshman', 'Mechanical Engineering', 1),
+    ('DAL697934', 'Rachael', 'Le', 'freshman', 'Data Science', 1),
+    ('DAL329634', 'Sarah', 'Bio', 'freshman', 'Biology', 1),
+    ('NAT220003', 'Adrian', 'Tran', 'junior', 'Computer Science', 1),
+    ('DAL368425', 'Lily', 'Dinh', 'freshman', 'Biology', 1),
+    ('DAL462491', 'Hrishi', 'Patel', 'freshman', 'Mechanical Engineering', 1),
+    ('DAL960126', 'Michael', 'Ly', 'freshman', 'Electrical Engineering', 1),
+    ('DAL241389', 'Jojo', 'Dizon', 'freshman', 'Mechanical Engineering', 1),
+    ('AXC230181', 'Ashley', 'Cheung', 'sophomore', 'Healthcare Management', 1),
+    ('DAL815206', 'Uyen', 'Tran', 'freshman', 'Computer Science', 1),
+    ('DAL302202', 'Jennifer', 'Nguyen', 'freshman', 'Computer Science', 1),
+    ('DAL530004', 'Tony', 'Nguyen', 'freshman', 'Software Engineering', 1),
+    ('BXN210022', 'Billy', 'Nguyen', 'senior', 'Computer Science', 1),
+    ('DAL487670', 'Tina', 'Le', 'freshman', 'Biochemistry', 1),
+    ('NA00000002', 'Khoi', 'Pham', 'graduate', 'Computer Engineering', 1),
+    ('DAL315713', 'Tony', 'Vu', 'freshman', 'Computer science', 1),
+    ('DAL577712', 'Raina', 'Burusnukul', 'junior', 'Marketing', 1),
+    ('DAL049714', 'Joanne', 'Nguyen', 'freshman', 'Neuroscience', 1),
+    ('DAL848976', 'Tracy', 'Huang', 'freshman', 'Mechanical Engineering', 1),
+    ('BQN230000', 'Brendon', 'Nguyen', 'senior', 'Computer Science', 1),
+    ('SQN200001', 'Steven', 'Nguyen', 'graduate', 'Mechanical Engineering', 1),
+    ('AVN210000', 'Ashley', 'Nguyen', 'graduate', 'Computer Science', 1),
+    ('MHD210005', 'Matthew', 'Du', 'graduate', 'Computer Science', 1);
+
+INSERT INTO event (event_name, description, location, event_date, start_time, capacity) VALUES
+    ('Discord Night 1', 'Hangout on discord', 'Discord', '2025-10-24', '19:00:00', NULL),
+    ('Valorant 10 Mans 1', 'Custom Valorant 10 man game', 'Discord', '2025-10-10', '19:00:00', 10),
+    ('SomiSomi 1', 'Go to Carrolton to get Somi Somi', 'Carrolton Plaza', '2025-10-06', '19:00:00', NULL),
+    ('Study Night 1', 'Study together on campus', 'UTD', '2025-10-07', '21:00:00', NULL),
+    ('Cicis 1', 'Eat at Cicis pizza buffet', 'Cicis Pizza', '2025-10-13', '19:00:00', NULL),
+    ('UT External', 'Travel to Austin for the UT external', 'University of Texas', '2025-11-08', '11:00:00', NULL),
+    ('UH External', 'Travel to Houston for the UH external', 'University of Houston', '2026-02-07', '11:00:00', NULL),
+    ('Taco Tuesday 1', 'Get $1 tacos at Taco Nuevo', 'Taco Nuevo Leon', '2025-10-07', '19:00:00', NULL),
+    ('Hot Pot Fairy 1', 'Eat malatang at Hot Pot Fairy', 'Hot Pot Fairy', '2025-10-21', '20:15:00', NULL),
+    ('Gym 1', 'Workout at the AC', 'Activity Center', '2026-02-09', '15:03:00', NULL);
+
+INSERT INTO fam_head (net_id, start_date, end_date, fam_id) VALUES
+    ('BQN230000', '2026-10-02', '2026-05-08', 1),
+    ('SQN200001', '2026-10-02', '2026-05-08', 1),
+    ('AVN210000', '2026-10-02', '2026-05-08', 1),
+    ('MHD210005', '2026-10-02', '2026-05-08', 1);
+
+INSERT INTO officer (position, start_date, end_date, net_id) VALUES
+    ('FamChair', '2025-08-25', '2026-05-08', 'SQN200001');
+
+INSERT INTO attendance (event_id, net_id, attended) VALUES 
+    (1, 'DAL314181', TRUE), (1, 'DAL697934', TRUE), (1, 'DAL573633', TRUE), (1, 'DAL030871', TRUE), (1, 'NTT240000', TRUE), (1, 'DNN200001', TRUE), (1, 'JHL220003', TRUE), (1, 'KXH220026', TRUE), (1, 'DAL566812', TRUE), (1, 'DAL974164', TRUE), (1, 'DAL183708', TRUE), (1, 'DAL687333', TRUE), (1, 'J2233179', TRUE), (1, 'DAL100658', TRUE), (1, 'DAL314619', TRUE), (1, 'BQN230000', TRUE),
+    (2, 'DAL573633', TRUE), (2, 'DAL974164', TRUE), (2, 'BXV220008', TRUE), (2, 'DAL183708', TRUE), (2, 'ALD240001', TRUE), (2, 'KXH220026', TRUE), (2, 'BQN230000', TRUE),
+    (3, 'JSP190003', TRUE), (3, 'KHP220001', TRUE), (3, 'KND230002', TRUE), (3, 'KXH220026', TRUE), (3, 'DAL473036', TRUE), (3, 'DNN200001', TRUE), (3, 'JHL220003', TRUE), (3, 'MHN220002', TRUE), (3, 'HMT210000', TRUE), (3, 'LTN230001', TRUE), (3, 'LNT230002', TRUE), (3, 'DAL974164', TRUE), (3, 'KDN230001', TRUE), (3, 'DAL183708', TRUE), (3, 'ALD240001', TRUE), (3, 'DAL030871', TRUE), (3, 'BQN230000', TRUE),
+    (4, 'DAL974164', TRUE), (4, 'NTT240000', TRUE), (4, 'DAL473036', TRUE), (4, 'JHL220003', TRUE), (4, 'ALD240001', TRUE), (4, 'DAL687333', TRUE), (4, 'KXH220026', TRUE), (4, 'DAL030871', TRUE), (4, 'DNN200001', TRUE), (4, 'BQN230000', TRUE),
+    (5, 'NTT240000', TRUE), (5, 'KXH220026', TRUE), (5, 'JHL220003', TRUE), (5, 'DNN200001', TRUE), (5, 'MHN220002', TRUE), (5, 'DAL473036', TRUE), (5, 'DAL030871', TRUE), (5, 'BQN230000', TRUE),
+    (6, 'DAL473036', TRUE), (6, 'DAL351222', TRUE), (6, 'JHL220003', TRUE), (6, 'DAL183708', TRUE), (6, 'LRS210002', TRUE), (6, 'HMT210000', TRUE), (6, 'JSP190003', TRUE), (6, 'MHN220002', TRUE), (6, 'KDN230001', TRUE), (6, 'LNT230002', TRUE), (6, 'ALD240001', TRUE), (6, 'DAL687333', TRUE), (6, 'DAL974164', TRUE), (6, 'NTT240000', TRUE), (6, 'LTN230001', TRUE), (6, 'J2233179', TRUE), (6, 'KXH220026', TRUE), (6, 'DAL314181', TRUE), (6, 'DAL329634', TRUE), (6, 'BQN230000', TRUE),
+    (7, 'DAL473036', TRUE), (7, 'DAL566812', TRUE), (7, 'DAL314181', TRUE), (7, 'ALD240001', TRUE), (7, 'LRS210002', TRUE), (7, 'DAL183708', TRUE), (7, 'NTT240000', TRUE), (7, 'LNT230002', TRUE), (7, 'JSP190003', TRUE), (7, 'DAL974164', TRUE), (7, 'DAL687333', TRUE), (7, 'DAL030871', TRUE), (7, 'KXH220026', TRUE), (7, 'BQN230000', TRUE),
+    (8, 'DAL974164', TRUE), (8, 'NTT240000', TRUE), (8, 'DAL473036', TRUE), (8, 'JHL220003', TRUE), (8, 'ALD240001', TRUE), (8, 'DAL687333', TRUE), (8, 'KXH220026', TRUE), (8, 'DAL030871', TRUE), (8, 'DNN200001', TRUE), (8, 'BQN230000', TRUE),
+    (9, 'LTN230001', TRUE), (9, 'JHL220003', TRUE), (9, 'DAL183708', TRUE), (9, 'DAL687333', TRUE), (9, 'DAL566812', TRUE), (9, 'J2233179', TRUE), (9, 'KDN230001', TRUE), (9, 'KXH220026', TRUE), (9, 'DAL473036', TRUE), (9, 'BQN230000', TRUE),
+    (10, 'DAL030871', TRUE), (10, 'LNT230002', TRUE), (10, 'DAL314181', TRUE), (10, 'DAL687333', TRUE), (10, 'DAL566812', TRUE), (10, 'ALD240001', TRUE), (10, 'JSP190003', TRUE), (10, 'DAL329634', TRUE), (10, 'DAL183708', TRUE), (10, 'DAL974164', TRUE), (10, 'BQN230000', TRUE);
+
+INSERT INTO organizes (event_id, fam_head_id, role) VALUES
+    (1, 1, 'Organizer'),
+    (2, 1, 'Organizer'),
+    (3, 4, 'Organizer'),
+    (4, 3, 'Organizer'),
+    (5, 1, 'Organizer'),
+    (6, 2, 'Organizer'),
+    (7, 2, 'Organizer'),
+    (8, 1, 'Organizer'),
+    (9, 4, 'Organizer'),
+    (10, 1, 'Organizer');
+

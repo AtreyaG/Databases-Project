@@ -1,0 +1,6 @@
+services:
+  phase3:
+    build: .
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: database-project
