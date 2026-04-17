@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FamHub - Fam Event Management System</title>
-    <meta http-equiv="refresh" content="0;url=login.html">
+    <meta http-equiv="refresh" content="0;url=login.php">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="login-page">
@@ -23,7 +23,7 @@
             <h2>Welcome to FamHub</h2>
             <p class="login-subtitle">Redirecting to login...</p>
             <p style="text-align:center; margin-top: 20px;">
-                <a href="login.html">Click here if not redirected</a>
+                <a href="login.php">Click here if not redirected</a>
             </p>
         </div>
     </div>

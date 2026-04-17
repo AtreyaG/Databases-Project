@@ -15,11 +15,11 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="dashboard.html"><span class="nav-icon">&#9776;</span> Dashboard</a></li>
-                <li><a href="event_form.html" class="active"><span class="nav-icon">&#128197;</span> Events</a></li>
-                <li><a href="event_signup.html"><span class="nav-icon">&#9997;</span> Event Signup</a></li>
-                <li><a href="fam_management.html"><span class="nav-icon">&#128101;</span> Fam Management</a></li>
-                <li><a href="reports.html"><span class="nav-icon">&#128202;</span> Reports</a></li>
+                <li><a href="dashboard.php"><span class="nav-icon">&#9776;</span> Dashboard</a></li>
+                <li><a href="event_form.php" class="active"><span class="nav-icon">&#128197;</span> Events</a></li>
+                <li><a href="event_signup.php"><span class="nav-icon">&#9997;</span> Event Signup</a></li>
+                <li><a href="fam_management.php"><span class="nav-icon">&#128101;</span> Fam Management</a></li>
+                <li><a href="reports.php"><span class="nav-icon">&#128202;</span> Reports</a></li>
             </ul>
         </nav>
         <div class="sidebar-user">
@@ -30,7 +30,7 @@
             </div>
         </div>
         <div class="sidebar-signout">
-            <a href="login.html">&#8592; Sign out</a>
+            <a href="login.php">&#8592; Sign out</a>
         </div>
     </aside>
 
