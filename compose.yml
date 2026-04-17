@@ -1,0 +1,9 @@
+services:
+  database:
+    build: database
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fam-hub-db
+    ports:
+      - "3306:3306"
+

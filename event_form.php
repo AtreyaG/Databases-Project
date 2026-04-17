@@ -36,6 +36,16 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        <?php
+        require_once 'db.php';
+        
+        $sql = "SELECT e.*, 
+                       (SELECT COUNT(*) FROM attendance a WHERE a.event_id = e.event_id) as current_attendance 
+                FROM event e 
+                ORDER BY e.event_date ASC";
+        $result = $conn->query($sql);
+        $events = $result->fetch_all(MYSQLI_ASSOC);
+        ?>
         <div class="page-header">
             <div class="page-header-row">
                 <div>
@@ -62,11 +72,11 @@
                     <div class="form-row">
                         <div>
                             <label for="event_date" class="required">Event Date</label>
-                            <input type="date" id="event_date" name="event_date" required>
+                            <input type="date" id="event_date" name="event_date" value="<?= date('Y-m-d') ?>" required>
                         </div>
                         <div>
                             <label for="event_time">Event Time</label>
-                            <input type="text" id="event_time" name="event_time" placeholder="e.g., 7:00 PM">
+                            <input type="time" id="event_time" name="event_time">
                         </div>
                     </div>
 
@@ -100,70 +110,22 @@
         </div>
 
         <!-- Event Cards -->
+        <?php foreach ($events as $event): ?>
         <div class="event-card">
-            <h3>Mid-Autumn Festival &#127905;</h3>
-            <p class="event-description">Celebrate with mooncakes, lanterns, and cultural performances.</p>
+            <h3><?= htmlspecialchars($event['event_name']) ?></h3>
+            <p class="event-description"><?= htmlspecialchars($event['description']) ?></p>
             <div class="event-meta">
-                <span>&#128197; Sep 14, 2026</span>
-                <span>&#128205; Student Union Ballroom</span>
-                <span>&#128101; 87/150</span>
+                <span>&#128197; <?= date('M d, Y', strtotime($event['event_date'])) ?></span>
+                <span>&#128205; <?= htmlspecialchars($event['location'] ?: 'No location set') ?></span>
+                <span>&#128101; <?= $event['current_attendance'] ?>/<?= $event['capacity'] ?: '∞' ?></span>
             </div>
+            <?php if ($event['capacity']): ?>
             <div class="progress-bar">
-                <div class="progress-fill" style="width: 58%;"></div>
+                <div class="progress-fill" style="width: <?= min(100, ($event['current_attendance'] / $event['capacity']) * 100) ?>%;"></div>
             </div>
+            <?php endif; ?>
         </div>
-
-        <div class="event-card">
-            <h3>Dumpling Night &#129377;</h3>
-            <p class="event-description">Learn to fold and cook dumplings together!</p>
-            <div class="event-meta">
-                <span>&#128197; Apr 24, 2026</span>
-                <span>&#128205; Community Kitchen</span>
-                <span>&#128101; 38/40</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 95%;"></div>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <h3>Karaoke Social &#127908;</h3>
-            <p class="event-description">Sing your heart out at our fam karaoke night.</p>
-            <div class="event-meta">
-                <span>&#128197; May 1, 2026</span>
-                <span>&#128205; KTV Lounge</span>
-                <span>&#128101; 15/30</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 50%;"></div>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <h3>Lunar New Year Gala &#127887;</h3>
-            <p class="event-description">Our biggest event of the year with performances, food, and fun.</p>
-            <div class="event-meta">
-                <span>&#128197; Jan 28, 2027</span>
-                <span>&#128205; Grand Hall</span>
-                <span>&#128101; 142/300</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 47%;"></div>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <h3>Boba Run &#129483;</h3>
-            <p class="event-description">Fam bonding over boba tea!</p>
-            <div class="event-meta">
-                <span>&#128197; Apr 17, 2026</span>
-                <span>&#128205; Tea House Downtown</span>
-                <span>&#128101; 20/25</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 80%;"></div>
-            </div>
-        </div>
+        <?php endforeach; ?>
 
         <footer>
             <p>FamHub &copy; 2026 | CS 4347 Database Systems Project</p>
