@@ -58,7 +58,8 @@ INSERT INTO member (net_id, first_name, last_name, year, major, fam_id) VALUES
     ('SQN200001', 'Steven', 'Nguyen', 'graduate', 'Mechanical Engineering', 1),
     ('AVN210000', 'Ashley', 'Nguyen', 'graduate', 'Computer Science', 1),
     ('MHD210005', 'Matthew', 'Du', 'graduate', 'Computer Science', 1),
-    ('AXG220155', 'Atreya', 'Ghosh', 'senior', 'Computer Science', 1);
+    ('AXG220155', 'Atreya', 'Ghosh', 'senior', 'Computer Science', 1),
+    ('EJZ230000', 'Ellison', 'Zhu', 'junior', 'Computer Science', 1);
 
 INSERT INTO event (event_name, description, location, event_date, start_time, capacity) VALUES
     ('Discord Night 1', 'Hangout on discord', 'Discord', '2025-10-24', '19:00:00', NULL),
@@ -82,7 +83,10 @@ INSERT INTO officer (position, start_date, end_date, net_id, password) VALUES
     ('FamChair', '2025-08-25', '2026-05-08', 'AXG220155',
      '$2y$12$JQyK35ava7Q9HaKtUmx9tuBuv3srkH3GJlz7CNTNSqndCcR95/wxi'),
     ('Treasurer', '2025-08-25', '2026-05-08', 'BQN230000',
+     '$2y$12$JQyK35ava7Q9HaKtUmx9tuBuv3srkH3GJlz7CNTNSqndCcR95/wxi'),
+    ('Secretary', '2025-08-25', '2026-05-08', 'EJZ230000',
      '$2y$12$JQyK35ava7Q9HaKtUmx9tuBuv3srkH3GJlz7CNTNSqndCcR95/wxi');
+
 
 INSERT INTO attendance (event_id, net_id, attended) VALUES 
     (1, 'DAL314181', TRUE), (1, 'DAL697934', TRUE), (1, 'DAL573633', TRUE), (1, 'DAL030871', TRUE), (1, 'NTT240000', TRUE), (1, 'DNN200001', TRUE), (1, 'JHL220003', TRUE), (1, 'KXH220026', TRUE), (1, 'DAL566812', TRUE), (1, 'DAL974164', TRUE), (1, 'DAL183708', TRUE), (1, 'DAL687333', TRUE), (1, 'J2233179', TRUE), (1, 'DAL100658', TRUE), (1, 'DAL314619', TRUE), (1, 'BQN230000', TRUE),
