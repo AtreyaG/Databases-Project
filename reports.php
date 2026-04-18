@@ -5,6 +5,65 @@ if (!isset($_SESSION['logged_in'])) {
     exit();
 }
 require_once 'user_info.php';
+
+// --- Members per Fam ---
+$fam_result = $conn->query("SELECT fam_name, member_count FROM family ORDER BY fam_id");
+$fams = [];
+$fam_total = 0;
+while ($row = $fam_result->fetch_assoc()) {
+    $fams[] = $row;
+    $fam_total += $row['member_count'];
+}
+
+// --- Event Attendance Rate (5 most recent) ---
+$att_stmt = $conn->query("
+    SELECT e.event_name,
+           COUNT(a.net_id) AS attended,
+           (SELECT COUNT(*) FROM member) AS total_members
+    FROM event e
+    LEFT JOIN attendance a ON e.event_id = a.event_id AND a.attended = TRUE
+    GROUP BY e.event_id, e.event_name
+    ORDER BY e.event_date DESC
+    LIMIT 5
+");
+$events = [];
+while ($row = $att_stmt->fetch_assoc()) {
+    $rate = $row['total_members'] > 0 ? round($row['attended'] / $row['total_members'] * 100) : 0;
+    $events[] = ['name' => $row['event_name'], 'rate' => $rate];
+}
+$events = array_reverse($events); // chronological order for chart
+
+// --- Potentially Inactive Members ---
+$inactive_result = $conn->query("
+    SELECT m.first_name, m.last_name, f.fam_name
+    FROM member m
+    LEFT JOIN family f ON m.fam_id = f.fam_id
+    LEFT JOIN attendance a ON m.net_id = a.net_id
+    WHERE a.net_id IS NULL
+    ORDER BY m.last_name, m.first_name
+");
+$inactive = [];
+while ($row = $inactive_result->fetch_assoc()) {
+    $inactive[] = $row;
+}
+
+// Pie chart colors
+$pie_colors = ['#c44a4a', '#d4706e', '#d4885a', '#dbb86a', '#8a9bab', '#6a8bab', '#7ab88a'];
+
+// Bar chart colors
+$bar_colors = ['#c44a4a', '#d4706e', '#a63d3d', '#d4885a', '#dbb86a'];
+
+// SVG pie path helper
+function pie_path($cx, $cy, $r, $start_deg, $end_deg, $color) {
+    $start_rad = deg2rad($start_deg - 90);
+    $end_rad   = deg2rad($end_deg - 90);
+    $x1 = $cx + $r * cos($start_rad);
+    $y1 = $cy + $r * sin($start_rad);
+    $x2 = $cx + $r * cos($end_rad);
+    $y2 = $cy + $r * sin($end_rad);
+    $large = ($end_deg - $start_deg > 180) ? 1 : 0;
+    return "<path d=\"M{$cx},{$cy} L{$x1},{$y1} A{$r},{$r} 0 {$large},1 {$x2},{$y2} Z\" fill=\"{$color}\"/>";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,50 +110,64 @@ require_once 'user_info.php';
 
         <!-- Charts Grid -->
         <div class="charts-grid">
+            <!-- Members per Fam Pie Chart -->
             <div class="chart-card">
                 <h3>Members per Fam</h3>
                 <div class="chart-placeholder" id="pie-chart">
-                    <!-- Inline SVG Pie Chart -->
                     <svg viewBox="0 0 200 200" width="200" height="200">
-                        <circle cx="100" cy="100" r="90" fill="#c44a4a"/>
-                        <path d="M100,100 L100,10 A90,90 0 0,1 177,145 Z" fill="#d4706e"/>
-                        <path d="M100,100 L177,145 A90,90 0 0,1 100,190 Z" fill="#d4885a"/>
-                        <path d="M100,100 L100,190 A90,90 0 0,1 23,145 Z" fill="#dbb86a"/>
-                        <path d="M100,100 L23,145 A90,90 0 0,1 45,40 Z" fill="#8a9bab"/>
+                        <?php if (count($fams) === 1): ?>
+                            <circle cx="100" cy="100" r="90" fill="<?= $pie_colors[0] ?>"/>
+                        <?php elseif (count($fams) > 1):
+                            $angle = 0;
+                            foreach ($fams as $i => $fam):
+                                $slice = ($fam['member_count'] / $fam_total) * 360;
+                                echo pie_path(100, 100, 90, $angle, $angle + $slice, $pie_colors[$i % count($pie_colors)]);
+                                $angle += $slice;
+                            endforeach;
+                        endif; ?>
                     </svg>
                 </div>
-                <div style="display: flex; gap: 16px; justify-content: center; margin-top: 12px; font-size: 12px; color: var(--text-light);">
-                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c44a4a;margin-right:4px;"></span>Dragon</span>
-                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d4885a;margin-right:4px;"></span>Phoenix</span>
-                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dbb86a;margin-right:4px;"></span>Tiger</span>
-                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8a9bab;margin-right:4px;"></span>Panda</span>
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: var(--text-light);">
+                    <?php foreach ($fams as $i => $fam): ?>
+                        <span>
+                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:<?= $pie_colors[$i % count($pie_colors)] ?>;margin-right:4px;"></span>
+                            <?= htmlspecialchars($fam['fam_name']) ?> (<?= $fam['member_count'] ?>)
+                        </span>
+                    <?php endforeach; ?>
                 </div>
             </div>
+
+            <!-- Event Attendance Rate Bar Chart -->
             <div class="chart-card">
                 <h3>Event Attendance Rate (%)</h3>
                 <div class="chart-placeholder" id="bar-chart">
-                    <!-- Inline SVG Bar Chart -->
-                    <svg viewBox="0 0 300 200" width="300" height="200">
-                        <!-- Y axis labels -->
-                        <text x="25" y="20" font-size="10" fill="#9ca3af" text-anchor="end">100</text>
-                        <text x="25" y="60" font-size="10" fill="#9ca3af" text-anchor="end">75</text>
-                        <text x="25" y="100" font-size="10" fill="#9ca3af" text-anchor="end">50</text>
-                        <text x="25" y="140" font-size="10" fill="#9ca3af" text-anchor="end">25</text>
-                        <text x="25" y="180" font-size="10" fill="#9ca3af" text-anchor="end">0</text>
-                        <!-- Grid lines -->
-                        <line x1="30" y1="17" x2="290" y2="17" stroke="#e5e7eb" stroke-width="0.5"/>
-                        <line x1="30" y1="57" x2="290" y2="57" stroke="#e5e7eb" stroke-width="0.5"/>
-                        <line x1="30" y1="97" x2="290" y2="97" stroke="#e5e7eb" stroke-width="0.5"/>
-                        <line x1="30" y1="137" x2="290" y2="137" stroke="#e5e7eb" stroke-width="0.5"/>
-                        <line x1="30" y1="177" x2="290" y2="177" stroke="#e5e7eb" stroke-width="0.5"/>
+                    <?php
+                    $svg_w = 380; $svg_h = 230;
+                    $label_w = 145; $pad_right = 15; $pad_top = 15; $pad_bottom = 28;
+                    $chart_w = $svg_w - $label_w - $pad_right;
+                    $chart_h = $svg_h - $pad_top - $pad_bottom;
+                    $n = count($events);
+                    $bar_h = $n > 0 ? min(32, ($chart_h / $n) * 0.65) : 32;
+                    $gap    = $n > 1 ? ($chart_h - $bar_h * $n) / ($n - 1) : 0;
+                    ?>
+                    <svg viewBox="0 0 <?= $svg_w ?> <?= $svg_h ?>" width="<?= $svg_w ?>" height="<?= $svg_h ?>">
+                        <!-- X axis grid lines & labels -->
+                        <?php foreach ([0, 25, 50, 75, 100] as $val):
+                            $x = $label_w + ($val / 100) * $chart_w;
+                        ?>
+                            <line x1="<?= $x ?>" y1="<?= $pad_top ?>" x2="<?= $x ?>" y2="<?= $pad_top + $chart_h ?>" stroke="#e5e7eb" stroke-width="0.5"/>
+                            <text x="<?= $x ?>" y="<?= $svg_h - $pad_bottom + 16 ?>" font-size="11" fill="#9ca3af" text-anchor="middle"><?= $val ?>%</text>
+                        <?php endforeach; ?>
                         <!-- Bars -->
-                        <rect x="55" y="82" width="50" height="95" rx="4" fill="#c44a4a"/>
-                        <rect x="125" y="97" width="50" height="80" rx="4" fill="#d4706e"/>
-                        <rect x="195" y="17" width="50" height="160" rx="4" fill="#a63d3d"/>
-                        <!-- X axis labels -->
-                        <text x="80" y="195" font-size="9" fill="#9ca3af" text-anchor="middle">Mid-Autumn</text>
-                        <text x="150" y="195" font-size="9" fill="#9ca3af" text-anchor="middle">Karaoke</text>
-                        <text x="220" y="195" font-size="9" fill="#9ca3af" text-anchor="middle">Boba Run</text>
+                        <?php foreach ($events as $i => $ev):
+                            $by    = $pad_top + $i * ($bar_h + $gap);
+                            $bw    = ($ev['rate'] / 100) * $chart_w;
+                            $color = $bar_colors[$i % count($bar_colors)];
+                        ?>
+                            <text x="<?= $label_w - 8 ?>" y="<?= $by + $bar_h / 2 + 4 ?>" font-size="11" fill="#374151" text-anchor="end"><?= htmlspecialchars($ev['name']) ?></text>
+                            <rect x="<?= $label_w ?>" y="<?= $by ?>" width="<?= $bw ?>" height="<?= $bar_h ?>" rx="4" fill="<?= $color ?>"/>
+                            <text x="<?= $label_w + $bw + 4 ?>" y="<?= $by + $bar_h / 2 + 4 ?>" font-size="11" fill="#374151"><?= $ev['rate'] ?>%</text>
+                        <?php endforeach; ?>
                     </svg>
                 </div>
             </div>
@@ -103,30 +176,23 @@ require_once 'user_info.php';
         <!-- Potentially Inactive Members -->
         <div class="inactive-section">
             <h2 class="section-title">Potentially Inactive Members</h2>
-            <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">Members who haven't signed up for any events recently.</p>
+            <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">Members who haven't signed up for any events.</p>
 
             <div class="inactive-cards">
-                <div class="inactive-card">
-                    <div class="member-initials" style="background: #c44a4a;">MC</div>
-                    <div class="member-info">
-                        <div class="member-name">Mei-Ling Chen</div>
-                        <div class="member-fam">Dragon Fam &#128009;</div>
+                <?php if (empty($inactive)): ?>
+                    <p style="color: var(--text-light); font-size: 14px;">All members have attended at least one event.</p>
+                <?php else: foreach ($inactive as $m):
+                    $initials = strtoupper(substr($m['first_name'], 0, 1) . substr($m['last_name'], 0, 1));
+                    $color = $pie_colors[abs(crc32($m['last_name'])) % count($pie_colors)];
+                ?>
+                    <div class="inactive-card">
+                        <div class="member-initials" style="background: <?= $color ?>;"><?= htmlspecialchars($initials) ?></div>
+                        <div class="member-info">
+                            <div class="member-name"><?= htmlspecialchars($m['first_name'] . ' ' . $m['last_name']) ?></div>
+                            <div class="member-fam"><?= htmlspecialchars($m['fam_name'] ?? 'No Fam') ?></div>
+                        </div>
                     </div>
-                </div>
-                <div class="inactive-card">
-                    <div class="member-initials" style="background: #d4885a;">RN</div>
-                    <div class="member-info">
-                        <div class="member-name">Ryan Nguyen</div>
-                        <div class="member-fam">Phoenix Fam &#128293;</div>
-                    </div>
-                </div>
-                <div class="inactive-card">
-                    <div class="member-initials" style="background: #8a9bab;">FA</div>
-                    <div class="member-info">
-                        <div class="member-name">Fatima Al-Hassan</div>
-                        <div class="member-fam">Tiger Fam &#128047;</div>
-                    </div>
-                </div>
+                <?php endforeach; endif; ?>
             </div>
         </div>
 
