@@ -47,6 +47,7 @@ CREATE TABLE officer (
     start_date DATE NOT NULL DEFAULT (CURRENT_DATE),
     end_date DATE DEFAULT NULL,
     net_id VARCHAR(10) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     FOREIGN KEY (net_id) REFERENCES member(net_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -74,6 +75,15 @@ CREATE TABLE organizes (
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (fam_head_id) REFERENCES fam_head(fam_head_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE member_auth (
+    net_id VARCHAR(10) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (net_id) REFERENCES member(net_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
