@@ -7,23 +7,55 @@ if (!isset($_SESSION['logged_in']) && !isset($_SESSION['member_logged_in'])) {
 $is_officer = isset($_SESSION['logged_in']);
 require_once 'user_info.php';
 
-if (!$is_officer) {
+if ($is_officer) {
+    $total_members = $conn->query("SELECT COUNT(*) FROM member")->fetch_row()[0];
+    
+    $total_fams = $conn->query("SELECT COUNT(*) FROM family")->fetch_row()[0];
+    
+    $upcoming_events_count = $conn->query("SELECT COUNT(*) FROM event WHERE event_date >= CURDATE() AND event_date <= LAST_DAY(CURDATE())")->fetch_row()[0];
+    
+    $officer_events = $conn->query("
+        SELECT e.*, 
+               (SELECT COUNT(*) FROM attendance WHERE event_id = e.event_id) as signup_count
+        FROM event e 
+        WHERE e.event_date >= CURDATE() 
+        ORDER BY e.event_date ASC 
+        LIMIT 3
+    ")->fetch_all(MYSQLI_ASSOC);
+
+    $fam_overview = $conn->query("SELECT * FROM family ORDER BY fam_name ASC")->fetch_all(MYSQLI_ASSOC);
+} else {
     // Fam info
     $fam_stmt = $conn->prepare("
-        SELECT f.fam_name, f.member_count,
-               GROUP_CONCAT(m2.first_name, ' ', m2.last_name ORDER BY m2.last_name SEPARATOR ', ') AS fam_heads
+        SELECT f.fam_id, f.fam_name, f.member_count
         FROM member m
         JOIN family f ON m.fam_id = f.fam_id
-        LEFT JOIN fam_head fh ON fh.fam_id = f.fam_id
-            AND (fh.end_date IS NULL OR fh.end_date >= CURDATE())
-        LEFT JOIN member m2 ON m2.net_id = fh.net_id
         WHERE m.net_id = ?
-        GROUP BY f.fam_id
     ");
     $fam_stmt->bind_param("s", $_SESSION['net_id']);
     $fam_stmt->execute();
     $fam_info = $fam_stmt->get_result()->fetch_assoc();
     $fam_stmt->close();
+
+    if ($fam_info) {
+        // Fetch fam heads separately to avoid GROUP_CONCAT
+        $heads_stmt = $conn->prepare("
+            SELECT m.first_name, m.last_name
+            FROM fam_head fh
+            JOIN member m ON fh.net_id = m.net_id
+            WHERE fh.fam_id = ? 
+              AND (fh.end_date IS NULL OR fh.end_date >= CURDATE())
+        ");
+        $heads_stmt->bind_param("i", $fam_info['fam_id']);
+        $heads_stmt->execute();
+        $heads_result = $heads_stmt->get_result();
+        $fam_heads_list = [];
+        while ($h = $heads_result->fetch_assoc()) {
+            $fam_heads_list[] = $h['first_name'] . ' ' . $h['last_name'];
+        }
+        $fam_info['fam_heads'] = !empty($fam_heads_list) ? implode(', ', $fam_heads_list) : 'None assigned';
+        $heads_stmt->close();
+    }
 
     // Recent events (last 5)
     $ev_stmt = $conn->prepare("
@@ -93,13 +125,13 @@ if (!$is_officer) {
             <div class="stat-card">
                 <div class="stat-icon">&#128101;</div>
                 <h4>Total Members</h4>
-                <div class="stat-value">47</div>
-                <div class="stat-sub">Across 4 fams</div>
+                <div class="stat-value"><?= $total_members ?></div>
+                <div class="stat-sub">Across <?= $total_fams ?> fams</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">&#128197;</div>
                 <h4>Upcoming Events</h4>
-                <div class="stat-value">3</div>
+                <div class="stat-value"><?= $upcoming_events_count ?></div>
                 <div class="stat-sub">This month</div>
             </div>
             <div class="stat-card">
@@ -111,66 +143,42 @@ if (!$is_officer) {
             <div class="stat-card">
                 <div class="stat-icon">&#127942;</div>
                 <h4>Active Fams</h4>
-                <div class="stat-value">4</div>
+                <div class="stat-value"><?= $total_fams ?></div>
                 <div class="stat-sub">All competing</div>
             </div>
         </div>
 
         <h2 class="section-title">Upcoming Events</h2>
 
+        <?php if (empty($officer_events)): ?>
+            <p style="color: var(--text-light); font-size: 14px;">No upcoming events found.</p>
+        <?php else: foreach ($officer_events as $ev): 
+            $prg = $ev['capacity'] > 0 ? min(100, round(($ev['signup_count'] / $ev['capacity']) * 100)) : 0;
+        ?>
         <div class="event-card">
-            <h3>Boba Run &#129483;</h3>
-            <p class="event-description">Fam bonding over boba tea!</p>
+            <h3><?= htmlspecialchars($ev['event_name']) ?></h3>
+            <p class="event-description"><?= htmlspecialchars($ev['description']) ?></p>
             <div class="event-meta">
-                <span>&#128197; Apr 17, 2026</span>
-                <span>&#128205; Tea House Downtown</span>
-                <span>&#128101; 20/25</span>
+                <span>&#128197; <?= date('M j, Y', strtotime($ev['event_date'])) ?></span>
+                <span>&#128205; <?= htmlspecialchars($ev['location']) ?></span>
+                <span>&#128101; <?= $ev['signup_count'] ?>/<?= $ev['capacity'] ?: '∞' ?></span>
             </div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 80%;"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width: <?= $prg ?>%;"></div></div>
         </div>
-        <div class="event-card">
-            <h3>Dumpling Night &#129377;</h3>
-            <p class="event-description">Learn to fold and cook dumplings together!</p>
-            <div class="event-meta">
-                <span>&#128197; Apr 24, 2026</span>
-                <span>&#128205; Community Kitchen</span>
-                <span>&#128101; 38/40</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 95%;"></div></div>
-        </div>
-        <div class="event-card">
-            <h3>Karaoke Social &#127908;</h3>
-            <p class="event-description">Sing your heart out at our fam karaoke night.</p>
-            <div class="event-meta">
-                <span>&#128197; May 1, 2026</span>
-                <span>&#128205; KTV Lounge</span>
-                <span>&#128101; 15/30</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 50%;"></div></div>
-        </div>
+        <?php endforeach; endif; ?>
 
         <h2 class="section-title" style="margin-top: 40px;">Fam Overview</h2>
         <div class="fam-cards">
+            <?php foreach ($fam_overview as $f): 
+                $dot_colors = ['red', 'orange', 'green', 'blue'];
+                $color = $dot_colors[$f['fam_id'] % 4];
+            ?>
             <div class="fam-card">
-                <div class="fam-card-header"><span class="fam-dot red"></span> Dragon Fam &#128009;</div>
-                <div class="fam-count">4</div>
+                <div class="fam-card-header"><span class="fam-dot <?= $color ?>"></span> <?= htmlspecialchars($f['fam_name']) ?></div>
+                <div class="fam-count"><?= $f['member_count'] ?></div>
                 <div class="fam-label">members assigned</div>
             </div>
-            <div class="fam-card">
-                <div class="fam-card-header"><span class="fam-dot orange"></span> Phoenix Fam &#128293;</div>
-                <div class="fam-count">2</div>
-                <div class="fam-label">members assigned</div>
-            </div>
-            <div class="fam-card">
-                <div class="fam-card-header"><span class="fam-dot green"></span> Tiger Fam &#128047;</div>
-                <div class="fam-count">2</div>
-                <div class="fam-label">members assigned</div>
-            </div>
-            <div class="fam-card">
-                <div class="fam-card-header"><span class="fam-dot blue"></span> Panda Fam &#128060;</div>
-                <div class="fam-count">2</div>
-                <div class="fam-label">members assigned</div>
-            </div>
+            <?php endforeach; ?>
         </div>
 
         <?php else: ?>
