@@ -4,7 +4,7 @@ if (!isset($_SESSION['logged_in'])) {
     header('Location: login.php');
     exit();
 }
-require_once 'user_info.php';
+require_once '../user_info.php';
 
 // --- Members per Fam ---
 $fam_result = $conn->query("SELECT fam_name, member_count FROM family ORDER BY fam_id");

@@ -1,9 +1,23 @@
 services:
   database:
     build: database
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: fam-hub-db
-    ports:
-      - "3306:3306"
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+    expose:
+      - "3306"
+    # ports:
+    #   - "3306:3306"
 
+  php:
+    build: frontend
+    ports:
+      - "80:8080"
+    depends_on:
+      - database
+    env_file:
+      - .env
+    environment:
+      PHP_OPCACHE_ENABLE: 1

@@ -5,3 +5,5 @@ run.ps1
 php.ini
 
 .vscode/
+
+.env

@@ -4,7 +4,7 @@ if (!isset($_SESSION['logged_in'])) {
     header('Location: login.php');
     exit();
 }
-require_once 'db.php';
+require_once '../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? 'save';

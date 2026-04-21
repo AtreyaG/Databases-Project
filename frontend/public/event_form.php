@@ -4,7 +4,7 @@ if (!isset($_SESSION['logged_in'])) {
     header('Location: login.php');
     exit();
 }
-require_once 'user_info.php';
+require_once '../user_info.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,7 +45,7 @@ require_once 'user_info.php';
     <!-- Main Content -->
     <main class="main-content">
         <?php
-        require_once 'db.php';
+        require_once '../db.php';
         
         $sql = "SELECT e.*, 
                        (SELECT COUNT(*) FROM attendance a WHERE a.event_id = e.event_id) as current_attendance 

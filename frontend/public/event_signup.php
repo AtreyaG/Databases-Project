@@ -4,7 +4,7 @@ if (!isset($_SESSION['logged_in']) && !isset($_SESSION['member_logged_in'])) {
     header('Location: login.php');
     exit();
 }
-require_once 'db.php';
+require_once '../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     $event_id = (int)$_POST['event_id'];
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     exit();
 }
 
-require_once 'user_info.php';
+require_once '../user_info.php';
 $is_officer = isset($_SESSION['logged_in']);
 
 $ev_stmt = $conn->prepare("

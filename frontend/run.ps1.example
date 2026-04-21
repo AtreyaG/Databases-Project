@@ -3,4 +3,4 @@ $env:DB_USER = "root"
 $env:DB_PASS = ""
 $env:DB_NAME = "fam-hub-db"
 
-php -S localhost:8000
+php -S localhost:8000 -t public

@@ -1,5 +1,5 @@
 <?php
-require_once 'db.php';
+require_once '../db.php';
 $_stmt = $conn->prepare("SELECT first_name, last_name FROM member WHERE net_id = ?");
 $_stmt->bind_param("s", $_SESSION['net_id']);
 $_stmt->execute();

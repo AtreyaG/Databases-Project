@@ -5,7 +5,7 @@ if (!isset($_SESSION['logged_in']) && !isset($_SESSION['member_logged_in'])) {
     exit();
 }
 $is_officer = isset($_SESSION['logged_in']);
-require_once 'user_info.php';
+require_once '../user_info.php';
 
 if ($is_officer) {
     $total_members = $conn->query("SELECT COUNT(*) FROM member")->fetch_row()[0];
