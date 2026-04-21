@@ -4,7 +4,7 @@ if (!isset($_SESSION['member_logged_in'])) {
     header('Location: login.php');
     exit();
 }
-require_once 'user_info.php';
+require_once '../user_info.php';
 
 $stmt = $conn->prepare("
     SELECT e.event_name, e.event_date, e.location, a.attended

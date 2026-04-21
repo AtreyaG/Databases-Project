@@ -4,7 +4,7 @@ if (!isset($_SESSION['logged_in'])) {
     header('Location: login.php');
     exit();
 }
-require_once 'user_info.php';
+require_once '../user_info.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,7 +45,7 @@ require_once 'user_info.php';
     <!-- Main Content -->
     <main class="main-content">
         <?php
-        require_once 'db.php';
+        require_once '../db.php';
         
         $sql = "SELECT e.*, 
                        (SELECT COUNT(*) FROM attendance a WHERE a.event_id = e.event_id) as current_attendance 
@@ -69,6 +69,7 @@ require_once 'user_info.php';
             <fieldset>
                 <legend>Create New Event</legend>
                 <form action="event_process.php" method="POST">
+                    <input type="hidden" name="action" id="form_action" value="save">
                     <input type="hidden" id="event_id" name="event_id" value="">
 
                     <label for="event_name" class="required">Event Name</label>
@@ -93,8 +94,8 @@ require_once 'user_info.php';
 
                     <div class="form-row">
                         <div>
-                            <label for="event_capacity" class="required">Capacity</label>
-                            <input type="number" id="event_capacity" name="event_capacity" placeholder="Maximum attendees" min="1" required>
+                            <label for="event_capacity">Capacity</label>
+                            <input type="number" id="event_capacity" name="event_capacity" placeholder="Maximum attendees (optional)" min="1">
                         </div>
                         <div>
                             <label for="event_type">Event Type</label>
@@ -120,7 +121,17 @@ require_once 'user_info.php';
         <!-- Event Cards -->
         <?php foreach ($events as $event): ?>
         <div class="event-card">
-            <h3><?= htmlspecialchars($event['event_name']) ?></h3>
+            <div class="event-card-header">
+                <h3><?= htmlspecialchars($event['event_name']) ?></h3>
+                <div class="event-actions">
+                    <button class="btn btn-sm" onclick="editEvent(<?= htmlspecialchars(json_encode($event)) ?>)">Edit</button>
+                    <form action="event_process.php" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this event?')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="event_id" value="<?= $event['event_id'] ?>">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
             <p class="event-description"><?= htmlspecialchars($event['description']) ?></p>
             <div class="event-meta">
                 <span>&#128197; <?= date('M d, Y', strtotime($event['event_date'])) ?></span>
@@ -139,5 +150,26 @@ require_once 'user_info.php';
             <p>FamHub &copy; 2026 | CS 4347 Database Systems Project</p>
         </footer>
     </main>
+
+    <script>
+    function editEvent(event) {
+        document.getElementById('new-event-form').style.display = 'block';
+        document.getElementById('event_id').value = event.event_id;
+        document.getElementById('event_name').value = event.event_name;
+        document.getElementById('event_description').value = event.description;
+        document.getElementById('event_date').value = event.event_date;
+        document.getElementById('event_time').value = event.start_time;
+        document.getElementById('event_location').value = event.location;
+        document.getElementById('event_capacity').value = event.capacity;
+        document.getElementById('form_action').value = 'update';
+        
+        // Scroll to form
+        document.getElementById('new-event-form').scrollIntoView({ behavior: 'smooth' });
+        
+        // Change legend and submit button text
+        document.querySelector('#new-event-form legend').textContent = 'Edit Event';
+        document.querySelector('#new-event-form input[type="submit"]').value = 'Update Event';
+    }
+    </script>
 </body>
 </html>

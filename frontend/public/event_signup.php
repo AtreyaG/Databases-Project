@@ -4,19 +4,33 @@ if (!isset($_SESSION['logged_in']) && !isset($_SESSION['member_logged_in'])) {
     header('Location: login.php');
     exit();
 }
-require_once 'db.php';
+require_once '../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     $event_id = (int)$_POST['event_id'];
-    $stmt = $conn->prepare("INSERT IGNORE INTO attendance (event_id, net_id) VALUES (?, ?)");
-    $stmt->bind_param("is", $event_id, $_SESSION['net_id']);
-    $stmt->execute();
-    $stmt->close();
+    
+    // Check capacity first
+    $cap_stmt = $conn->prepare("SELECT capacity, (SELECT COUNT(*) FROM attendance WHERE event_id = e.event_id) as current FROM event e WHERE event_id = ?");
+    $cap_stmt->bind_param("i", $event_id);
+    $cap_stmt->execute();
+    $cap_res = $cap_stmt->get_result()->fetch_assoc();
+    $cap_stmt->close();
+
+    if (!$cap_res['capacity'] || $cap_res['current'] < $cap_res['capacity']) {
+        $stmt = $conn->prepare("INSERT IGNORE INTO attendance (event_id, net_id) VALUES (?, ?)");
+        $stmt->bind_param("is", $event_id, $_SESSION['net_id']);
+        $stmt->execute();
+        $stmt->close();
+    } else {
+        header('Location: event_signup.php?error=full');
+        exit();
+    }
+    
     header('Location: event_signup.php');
     exit();
 }
 
-require_once 'user_info.php';
+require_once '../user_info.php';
 $is_officer = isset($_SESSION['logged_in']);
 
 $ev_stmt = $conn->prepare("
@@ -79,6 +93,12 @@ $ev_stmt->close();
             <p>Register for events</p>
         </div>
 
+        <?php if (isset($_GET['error']) && $_GET['error'] === 'full'): ?>
+            <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                Sorry, that event is already at full capacity.
+            </div>
+        <?php endif; ?>
+
         <?php if (empty($events)): ?>
             <p style="color: var(--text-light); font-size: 14px;">No events found.</p>
         <?php else: foreach ($events as $ev): ?>
@@ -87,6 +107,8 @@ $ev_stmt->close();
                 <h3><?= htmlspecialchars($ev['event_name']) ?></h3>
                 <?php if ($ev['signed_up']): ?>
                     <span class="badge" style="background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;padding:6px 14px;font-size:13px;">&#10003; Signed Up</span>
+                <?php elseif ($ev['capacity'] && $ev['signup_count'] >= $ev['capacity']): ?>
+                    <span class="badge" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:6px 14px;font-size:13px;">Full</span>
                 <?php else: ?>
                     <form method="POST" style="margin: 0;">
                         <input type="hidden" name="event_id" value="<?= $ev['event_id'] ?>">
