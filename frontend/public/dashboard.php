@@ -24,6 +24,17 @@ if ($is_officer) {
     ")->fetch_all(MYSQLI_ASSOC);
 
     $fam_overview = $conn->query("SELECT * FROM family ORDER BY fam_name ASC")->fetch_all(MYSQLI_ASSOC);
+    $avg_attendance_query = $conn->query(
+        "SELECT ROUND(AVG(ratio), 1) AS avg_rate FROM (" .
+        " SELECT CASE WHEN e.capacity IS NULL OR e.capacity = 0 THEN 0 " .
+        " ELSE LEAST(100, COUNT(a.net_id) / e.capacity * 100) END AS ratio " .
+        " FROM event e " .
+        " LEFT JOIN attendance a ON a.event_id = e.event_id " .
+        " WHERE e.event_date >= CURDATE() " .
+        " GROUP BY e.event_id" .
+        ") AS attendance_rates"
+    );
+    $avg_attendance = $avg_attendance_query->fetch_assoc()['avg_rate'] ?? 0;
 } else {
     // Fam info
     $fam_stmt = $conn->prepare("
@@ -137,14 +148,14 @@ if ($is_officer) {
             <div class="stat-card">
                 <div class="stat-icon">&#128200;</div>
                 <h4>Avg. Attendance</h4>
-                <div class="stat-value">78%</div>
-                <div class="stat-sub">+5% from last semester</div>
+                <div class="stat-value"><?= $avg_attendance ?>%</div>
+                <div class="stat-sub">Based on signup rates</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">&#127942;</div>
                 <h4>Active Fams</h4>
                 <div class="stat-value"><?= $total_fams ?></div>
-                <div class="stat-sub">All competing</div>
+                <div class="stat-sub">With members</div>
             </div>
         </div>
 
