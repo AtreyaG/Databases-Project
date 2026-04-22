@@ -5,6 +5,50 @@ if (!isset($_SESSION['logged_in'])) {
     exit();
 }
 require_once '../user_info.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_fam'])) {
+    $net_id = $_POST['net_id'];
+    $new_fam_id = $_POST['fam_id'] !== '' ? intval($_POST['fam_id']) : null;
+
+    $current_stmt = $conn->prepare("SELECT fam_id FROM member WHERE net_id = ?");
+    $current_stmt->bind_param("s", $net_id);
+    $current_stmt->execute();
+    $current_fam_id = $current_stmt->get_result()->fetch_assoc()['fam_id'];
+    $current_stmt->close();
+
+    if ($new_fam_id === null) {
+        $update_stmt = $conn->prepare("UPDATE member SET fam_id = NULL WHERE net_id = ?");
+        $update_stmt->bind_param("s", $net_id);
+    } else {
+        $update_stmt = $conn->prepare("UPDATE member SET fam_id = ? WHERE net_id = ?");
+        $update_stmt->bind_param("is", $new_fam_id, $net_id);
+    }
+    $update_stmt->execute();
+    $update_stmt->close();
+
+    if ($current_fam_id) {
+        $conn->query("UPDATE family SET member_count = GREATEST(member_count - 1, 0) WHERE fam_id = " . intval($current_fam_id));
+    }
+    if ($new_fam_id) {
+        $conn->query("UPDATE family SET member_count = member_count + 1 WHERE fam_id = " . intval($new_fam_id));
+    }
+
+    header('Location: fam_management.php');
+    exit();
+}
+
+$fams = $conn->query("SELECT fam_id, fam_name, member_count FROM family ORDER BY fam_name ASC")->fetch_all(MYSQLI_ASSOC);
+
+$members = $conn->query(
+    "SELECT m.net_id, m.first_name, m.last_name, m.fam_id, f.fam_name, " .
+    "CASE WHEN o.net_id IS NOT NULL THEN 'officer' " .
+    "WHEN fh.net_id IS NOT NULL THEN 'fam head' ELSE 'member' END AS role " .
+    "FROM member m " .
+    "LEFT JOIN family f ON m.fam_id = f.fam_id " .
+    "LEFT JOIN officer o ON m.net_id = o.net_id AND (o.end_date IS NULL OR o.end_date >= CURDATE()) " .
+    "LEFT JOIN fam_head fh ON m.net_id = fh.net_id AND (fh.end_date IS NULL OR fh.end_date >= CURDATE()) " .
+    "ORDER BY m.last_name, m.first_name"
+)->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,34 +95,16 @@ require_once '../user_info.php';
 
         <!-- Fam Summary Cards -->
         <div class="fam-cards">
+            <?php foreach ($fams as $index => $fam): ?>
+            <?php $colors = ['red', 'orange', 'green', 'blue']; ?>
             <div class="fam-card">
                 <div class="fam-card-header">
-                    <span class="fam-dot red"></span> Dragon Fam &#128009;
+                    <span class="fam-dot <?= $colors[$index % count($colors)] ?>"></span> <?= htmlspecialchars($fam['fam_name']) ?>
                 </div>
-                <div class="fam-count">4</div>
+                <div class="fam-count"><?= $fam['member_count'] ?></div>
                 <div class="fam-label">members assigned</div>
             </div>
-            <div class="fam-card">
-                <div class="fam-card-header">
-                    <span class="fam-dot orange"></span> Phoenix Fam &#128293;
-                </div>
-                <div class="fam-count">2</div>
-                <div class="fam-label">members assigned</div>
-            </div>
-            <div class="fam-card">
-                <div class="fam-card-header">
-                    <span class="fam-dot green"></span> Tiger Fam &#128047;
-                </div>
-                <div class="fam-count">2</div>
-                <div class="fam-label">members assigned</div>
-            </div>
-            <div class="fam-card">
-                <div class="fam-card-header">
-                    <span class="fam-dot blue"></span> Panda Fam &#128060;
-                </div>
-                <div class="fam-count">2</div>
-                <div class="fam-label">members assigned</div>
-            </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- Members Table -->
@@ -93,118 +119,28 @@ require_once '../user_info.php';
                 </tr>
             </thead>
             <tbody>
+                <?php foreach ($members as $member): ?>
                 <tr>
-                    <td>Atreya Ghosh</td>
-                    <td>atreya@u.edu</td>
-                    <td><span class="badge badge-officer">officer</span></td>
+                    <td><?= htmlspecialchars($member['first_name'] . ' ' . $member['last_name']) ?></td>
+                    <td><?= htmlspecialchars($member['net_id']) ?>@u.edu</td>
+                    <td><span class="badge badge-<?= str_replace(' ', '', $member['role']) ?>"><?= htmlspecialchars($member['role']) ?></span></td>
                     <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option selected>Dragon Fam &#128009;</option>
-                            <option>Phoenix Fam &#128293;</option>
-                            <option>Tiger Fam &#128047;</option>
-                            <option>Panda Fam &#128060;</option>
-                        </select>
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="net_id" value="<?= htmlspecialchars($member['net_id']) ?>">
+                            <input type="hidden" name="update_fam" value="1">
+                            <select name="fam_id" onchange="this.form.submit()" style="width: auto; padding: 6px 10px; font-size: 13px;">
+                                <option value="" <?= $member['fam_id'] === null ? 'selected' : '' ?>>No Fam</option>
+                                <?php foreach ($fams as $fam): ?>
+                                <option value="<?= $fam['fam_id'] ?>" <?= $member['fam_id'] == $fam['fam_id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($fam['fam_name']) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </form>
                     </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
+                    <td></td>
                 </tr>
-                <tr>
-                    <td>Priya Sharma</td>
-                    <td>priya@u.edu</td>
-                    <td><span class="badge badge-famhead">fam head</span></td>
-                    <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option selected>Dragon Fam &#128009;</option>
-                            <option>Phoenix Fam &#128293;</option>
-                            <option>Tiger Fam &#128047;</option>
-                            <option>Panda Fam &#128060;</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
-                </tr>
-                <tr>
-                    <td>Kenji Tanaka</td>
-                    <td>kenji@u.edu</td>
-                    <td><span class="badge badge-famhead">fam head</span></td>
-                    <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option>Dragon Fam &#128009;</option>
-                            <option selected>Phoenix Fam &#128293;</option>
-                            <option>Tiger Fam &#128047;</option>
-                            <option>Panda Fam &#128060;</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
-                </tr>
-                <tr>
-                    <td>Sarah Kim</td>
-                    <td>sarah@u.edu</td>
-                    <td><span class="badge badge-famhead">fam head</span></td>
-                    <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option>Dragon Fam &#128009;</option>
-                            <option>Phoenix Fam &#128293;</option>
-                            <option selected>Tiger Fam &#128047;</option>
-                            <option>Panda Fam &#128060;</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
-                </tr>
-                <tr>
-                    <td>Jamal Robinson</td>
-                    <td>jamal@u.edu</td>
-                    <td><span class="badge badge-famhead">fam head</span></td>
-                    <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option>Dragon Fam &#128009;</option>
-                            <option>Phoenix Fam &#128293;</option>
-                            <option>Tiger Fam &#128047;</option>
-                            <option selected>Panda Fam &#128060;</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
-                </tr>
-                <tr>
-                    <td>Mei-Ling Chen</td>
-                    <td>meiling@u.edu</td>
-                    <td><span class="badge badge-member">member</span></td>
-                    <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option selected>Dragon Fam &#128009;</option>
-                            <option>Phoenix Fam &#128293;</option>
-                            <option>Tiger Fam &#128047;</option>
-                            <option>Panda Fam &#128060;</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
-                </tr>
-                <tr>
-                    <td>Ryan Nguyen</td>
-                    <td>ryan@u.edu</td>
-                    <td><span class="badge badge-member">member</span></td>
-                    <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option>Dragon Fam &#128009;</option>
-                            <option selected>Phoenix Fam &#128293;</option>
-                            <option>Tiger Fam &#128047;</option>
-                            <option>Panda Fam &#128060;</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
-                </tr>
-                <tr>
-                    <td>Fatima Al-Hassan</td>
-                    <td>fatima@u.edu</td>
-                    <td><span class="badge badge-member">member</span></td>
-                    <td>
-                        <select style="width: auto; padding: 6px 10px; font-size: 13px;">
-                            <option>Dragon Fam &#128009;</option>
-                            <option>Phoenix Fam &#128293;</option>
-                            <option selected>Tiger Fam &#128047;</option>
-                            <option>Panda Fam &#128060;</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary btn-sm">Edit</button></td>
-                </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
 
